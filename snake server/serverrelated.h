@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-
+#include "snakelogic.h"
 using namespace std;
 WSADATA wsd;
 
@@ -27,11 +27,23 @@ string info(int a) {//????
 	reverse(s.begin(), s.end());
 	return s;
 }
-
-void TalkToClient(string ip, SOCKET curr_sock) {
+void tells(string ip, SOCKET curr_sock) {
+	while (players[ip].nothread == false) {
+		string msg = "";
+		for (int i = 0; i < field.size(); ++i) {
+			for (int j = 0; j < field[i].size(); ++j) {
+				msg += ITS(field[i][j]) + " ";
+			}
+			
+		}
+		send(curr_sock, msg.c_str(), msg.size(), 0);
+		Sleep(300);
+	}
+}
+void hears(string ip, SOCKET curr_sock) {
 	int n = 1;
 	//while n != -1
-	while (1) {
+	while (n != -1) {
 		char buf[2000];
 		memset(buf, 0, 2000);
 		n = recv(curr_sock, buf, 2000, 0);
@@ -39,39 +51,18 @@ void TalkToClient(string ip, SOCKET curr_sock) {
 		if (players[ip].size != 0) {
 			if (to_lower(data) == "w" && players[ip].way != 's') {
 				players[ip].way = 'w';
-				send(curr_sock, data.c_str(), data.size(), 0);
 			}
 			else if (to_lower(data) == "left" && players[ip].way != 'd') {
 				players[ip].way = 'a';
-				send(curr_sock, data.c_str(), data.size(), 0);
 			}
 			else if (to_lower(data) == "down" && players[ip].way != 'w') {
 				players[ip].way = 's';
-				send(curr_sock, data.c_str(), data.size(), 0);
 			}
 			else if (to_lower(data) == "right" && players[ip].way != 'a') {
 				players[ip].way = 'd';
-				send(curr_sock, data.c_str(), data.size(), 0);
 			}
 			else if (to_lower(data) == "stay") {
 				players[ip].way = 'g';
-				send(curr_sock, data.c_str(), data.size(), 0);
-			}
-			else if (data == "7") {
-				string answer = "";
-				for (int i = 0; i < field.size(); ++i) {
-					for (int j = 0; j < field[i].size(); ++j) {
-						answer += info(field[i][j]);
-					}
-					answer += '\n';
-				}
-				answer += "'WASD' to move, 'G' to stay\n";
-				send(curr_sock, answer.c_str(), answer.size(), 0);
-
-			}
-			else {
-				data += "error";
-				send(curr_sock, data.c_str(), data.size(), 0);
 			}
 		}
 		else {
@@ -80,16 +71,11 @@ void TalkToClient(string ip, SOCKET curr_sock) {
 				players[ip].place = place;
 				field[place.first][place.second] = players[ip].id;
 			}
-			else {
-				string sorry = "there is no place";
-				send(curr_sock, sorry.c_str(), sorry.size(), 0);
-
-			}
-
 			players[ip].size = 4;
 			players[ip].way = 'g';
 		}
 	}
+	players[ip].nothread = true;
 	closesocket(curr_sock);
 }
 void waitforcon(SOCKET listener, sockaddr_in addr, int len) {
@@ -98,7 +84,14 @@ void waitforcon(SOCKET listener, sockaddr_in addr, int len) {
 	//0.0.0.0 is listener socket ip
 	if (ip != "0.0.0.0" && players[ip].nothread) {
 		players[ip].nothread = false;
-		thread thr(TalkToClient, ip, curr_sock);
-		thr.detach();
+		players[ip].size = 4;
+		pair <int, int> place = spawn();
+		players[inet_ntoa(addr.sin_addr)].place = place;
+		players[inet_ntoa(addr.sin_addr)].id = -(int)players.size();
+		field[place.first][place.second] = players[ip].id;
+		thread hear(hears, ip, curr_sock);
+		hear.detach();
+		thread tell(tells, ip, curr_sock);
+		tell.detach();
 	}
 }

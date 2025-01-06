@@ -24,7 +24,7 @@ int id = 0, kos = 0;
 
 int main() {
 	generate();
-	srand((unsigned int)time(NULL));
+	//srand((unsigned int)time(NULL));
 	/*
 	for (int i = 1, k = 0; i <= 10; ++i)
 		for (int j = 0; j < 9; ++j)
@@ -39,10 +39,7 @@ int main() {
 	int len = sizeof(listener.second);
 
 	while (1) {
-		
 		waitforcon(listener.first, listener.second, len);
-		
-		
 		kos = 0;//??
 	}
 	closesocket(listener.first);
