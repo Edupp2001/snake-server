@@ -7,6 +7,7 @@ struct player {//fix
 	int size = 0, id = 0;
 	char way;
 	bool is_blocked;
+	bool nothread = true;
 	pair <int, int> place;
 };
 map <string, player> players;
@@ -47,7 +48,6 @@ int STI(string a) {
 	else
 		return b;
 }
-
 void draw() {
 	//system("mode 200");//big picture mode
 	HDC hDC = GetDC(GetConsoleWindow());//??????? ?????? ? ???????

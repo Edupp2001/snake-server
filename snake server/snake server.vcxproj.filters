@@ -23,5 +23,8 @@
     <ClInclude Include="snakelogic.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="serverrelated.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
